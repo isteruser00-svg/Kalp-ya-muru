@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Süresiz Kırmızı ve Beyaz Kalp Yağmuru</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000000;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            touch-action: manipulation;
+        }
+
+        #hint {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            pointer-events: none;
+            transition: opacity 0.8s ease;
+            text-align: center;
+        }
+
+        .heart {
+            position: absolute;
+            pointer-events: none;
+            z-index: 10;
+            will-change: transform, opacity;
+            animation: fallAndFade linear forwards;
+        }
+
+        @keyframes fallAndFade {
+            0% {
+                transform: translate(-50%, 0) scale(0.6) rotate(0deg);
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.9;
+            }
+            100% {
+                transform: translate(calc(-50% + var(--drift)), var(--fall-dist)) scale(1.2) rotate(var(--rotation));
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="hint">Ekrana Dokun ❤️🤍</div>
+
+    <script>
+        const hint = document.getElementById('hint');
+        let initialTouch = true;
+        
+        // Kırmızı ve beyaz kalp emoji listesi
+        const heartTypes = ['❤️', '🤍'];
+
+        // Ekrana her dokunulduğunda bu fonksiyon çalışır
+        function triggerRain(clientX, clientY) {
+            if (initialTouch) {
+                hint.style.opacity = '0';
+                initialTouch = false;
+            }
+
+            // Her tıklamada oluşturulacak kalp sayısı
+            const count = 15;
+
+            for (let i = 0; i < count; i++) {
+                setTimeout(() => {
+                    createHeart(clientX, clientY);
+                }, i * 40); // Kalplerin peş peşe dökülmesi için gecikme
+            }
+        }
+
+        function createHeart(originX, originY) {
+            const heart = document.createElement('div');
+            heart.className = 'heart';
+
+            // Rastgele kırmızı veya beyaz kalp seçimi
+            const randomHeart = heartTypes[Math.floor(Math.random() * heartTypes.length)];
+            heart.innerText = randomHeart;
+
+            // Tıklanan noktanın etrafına yayılma hesaplamaları
+            const offsetX = (Math.random() - 0.5) * 160;
+            const startX = originX + offsetX;
+            const startY = originY + (Math.random() * 20 - 10);
+
+            const fallDistance = 350 + Math.random() * 200;
+            const drift = (Math.random() - 0.5) * 120;
+            const rotation = (Math.random() - 0.5) * 60;
+            const duration = 1.8 + Math.random() * 0.8;
+            const fontSize = 20 + Math.random() * 16;
+
+            heart.style.left = startX + 'px';
+            heart.style.top = startY + 'px';
+            heart.style.fontSize = fontSize + 'px';
+            heart.style.animationDuration = duration + 's';
+            heart.style.setProperty('--fall-dist', fallDistance + 'px');
+            heart.style.setProperty('--drift', drift + 'px');
+            heart.style.setProperty('--rotation', rotation + 'deg');
+
+            document.body.appendChild(heart);
+
+            // Kalp kaybolduktan sonra hafızadan temizlenir (böylece sayfa yavaşlamaz)
+            setTimeout(() => {
+                heart.remove();
+            }, duration * 1000);
+        }
+
+        // Fare ile tıklama (Masaüstü)
+        window.addEventListener('click', (e) => {
+            triggerRain(e.clientX, e.clientY);
+        });
+
+        // Parmağınızla dokunma (Telefon)
+        window.addEventListener('touchstart', (e) => {
+            for (let i = 0; i < e.changedTouches.length; i++) {
+                const touch = e.changedTouches[i];
+                triggerRain(touch.clientX, touch.clientY);
+            }
+        }, { passive: true });
+    </script>
+</body>
+</html>
